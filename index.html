@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All the Fishes</title>
+    <script src="https://pixijs.download/release/pixi.js"></script>
+  </head>
+  <body>
+    <script>
+      // Hint Put each fish in a container. Move fish by moving container and animate fish by selecting fish specifically.
+
+      // The app
+      const app = new PIXI.Application({
+        width: 640,
+        height: 480,
+        backgroundColor: 0x000000,
+      });
+
+      class Fish {
+        constructor(imagePath, scale) {
+          this.sprite = PIXI.Sprite.from(imagePath);
+          this.sprite.tint = 0x00ffff;
+          this.sprite.scale.set(scale);
+          this.body = new PIXI.Container();
+          this.body.addChild(this.sprite);
+        }
+
+        setPos(x = 0, y = 0) {
+          this.body.x = x;
+          this.body.y = y;
+        }
+
+        show() {
+          app.stage.addChild(this.body);
+        }
+      }
+
+      document.body.appendChild(app.view);
+
+      // Add our first sprite
+      // let fish1 = PIXI.Sprite.from('img/fish.png');
+      // fish1.scale.set(0.25);
+      // fish1.x = 300;
+      // fish1.y = 300;
+
+      // fish1.anchor.set(0.5);
+
+      // fish1.angle = 40;
+
+      // fish1.tint = 0xffcc40;
+
+      // //fish1.width = 400;
+
+      // // fish1.scale.x = 1;
+
+      // let fish2 = PIXI.Sprite.from('img/fish.png');
+      // fish2.scale.set(0.25);
+      // fish2.x = 400;
+      // fish2.y = 400;
+
+      // fish2.anchor.set(0.5);
+
+      // fish2.angle = 20;
+
+      // fish2.tint = 0xff9999;
+
+      // //fish2.width = 400;
+
+      // fish2.scale.x *= -1;
+
+      const fish1 = PIXI.Sprite.from('img/fish.png');
+      fish1.scale.set(0.2);
+      fish1.anchor.set(0.5);
+      const fishContainer1 = new PIXI.Container();
+      fishContainer1.x = 300;
+      fishContainer1.addChild(fish1);
+
+      app.stage.addChild(fishContainer1);
+      const fish2 = new Fish('img/fish.png', 0.2);
+      fish2.show();
+      // Add the sprite to the stage
+      //app.stage.addChild(fish1);
+      //app.stage.addChild(fish2);
+
+      let counter = 0;
+
+      function loop() {
+        counter++;
+        fish1.y = 200 + Math.sin(counter / 40) * 10;
+        fish2.setPos(
+          320 + Math.sin(counter / 100) * 300,
+          100 + Math.sin(counter / 40) * 10
+        );
+        fishContainer1.x = 320 + Math.sin(counter / 100) * 300;
+        // fish1.scale.x = 0.25 + Math.sin(counter / 2) / 400;
+        requestAnimationFrame(loop);
+      }
+      loop();
+    </script>
+  </body>
+</html>
