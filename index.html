@@ -18,17 +18,43 @@
       });
 
       class Fish {
-        constructor(imagePath, scale) {
+        // Sprite should be side view drawing of fish looking to the right
+        constructor(imagePath, scale, tint = null, baseX = 0, baseY = 0) {
           this.sprite = PIXI.Sprite.from(imagePath);
-          this.sprite.tint = 0x00ffff;
-          this.sprite.scale.set(scale);
+          if (tint) {
+            this.sprite.tint = tint;
+          }
+
+          this.sprite.anchor.set(0.5);
+          this.sprite.scale.set(Math.abs(scale)); // Not allowing negative values for scale.
           this.body = new PIXI.Container();
           this.body.addChild(this.sprite);
+          this.previousPos = this.body.x;
+        }
+        orientSprite() {
+          if (this.body.x < this.previousPos && this.sprite.scale.x < 0) {
+            this.sprite.scale.x = Math.abs(this.sprite.scale.x);
+          } else if (this.body.x > previousPos && this.sprite.scale.x > 0) {
+            this.sprite.scale.x *= -1;
+          }
+        }
+        moveX(x) {
+          this.body.x = x;
+          this.orientSprite();
+          this.previousPos = this.body.x;
         }
 
-        setPos(x = 0, y = 0) {
-          this.body.x = x;
+        moveY(y) {
           this.body.y = y;
+        }
+
+        move() {
+          this.wiggle(5, 250);
+        }
+
+        wiggle(wiggleFrequency, wiggleIntensity) {
+          this.sprite.scale.x =
+            0.25 + Math.sin(counter / wiggleFrequency) / wiggleIntensity;
         }
 
         show() {
@@ -69,14 +95,14 @@
 
       // fish2.scale.x *= -1;
 
-      const fish1 = PIXI.Sprite.from('img/fish.png');
-      fish1.scale.set(0.2);
-      fish1.anchor.set(0.5);
-      const fishContainer1 = new PIXI.Container();
-      fishContainer1.x = 300;
-      fishContainer1.addChild(fish1);
+      // const fish1 = PIXI.Sprite.from('img/fish.png');
+      // fish1.scale.set(0.2);
+      // fish1.anchor.set(0.5);
+      // const fishContainer1 = new PIXI.Container();
+      // fishContainer1.x = 300;
+      // fishContainer1.addChild(fish1);
 
-      app.stage.addChild(fishContainer1);
+      // app.stage.addChild(fishContainer1);
       const fish2 = new Fish('img/fish.png', 0.2);
       fish2.show();
       // Add the sprite to the stage
@@ -84,15 +110,17 @@
       //app.stage.addChild(fish2);
 
       let counter = 0;
-
       function loop() {
         counter++;
-        fish1.y = 200 + Math.sin(counter / 40) * 10;
-        fish2.setPos(
-          320 + Math.sin(counter / 100) * 300,
-          100 + Math.sin(counter / 40) * 10
-        );
-        fishContainer1.x = 320 + Math.sin(counter / 100) * 300;
+        // fish1.y = 200 + Math.sin(counter / 40) * 10;
+        previousPos = fish2.body.x;
+        fish2.wiggle(5, 250);
+        fish2.moveX(320 + Math.sin(counter / 100) * 300);
+        fish2.moveY(100 + Math.sin(counter / 40) * 10);
+
+        // fishContainer1.x = 320 + Math.sin(counter / 100) * 300;
+
+        // Body wiggle movement
         // fish1.scale.x = 0.25 + Math.sin(counter / 2) / 400;
         requestAnimationFrame(loop);
       }
