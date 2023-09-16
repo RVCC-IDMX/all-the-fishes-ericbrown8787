@@ -14,7 +14,7 @@
       const app = new PIXI.Application({
         width: 640,
         height: 480,
-        backgroundColor: 0x000000,
+        backgroundColor: 0xd4f1f9,
       });
 
       class Fish {
@@ -31,6 +31,8 @@
           this.body.addChild(this.sprite);
           this.previousPos = this.body.x;
         }
+
+        tick() {}
         orientSprite() {
           if (this.body.x < this.previousPos && this.sprite.scale.x < 0) {
             this.sprite.scale.x = Math.abs(this.sprite.scale.x);
@@ -65,11 +67,12 @@
       class Bubbler {
         constructor() {
           this.origin = new PIXI.Container();
-          this.origin.y = 400;
+          this.maxBubbles = 20;
+          this.origin.y = 450;
           this.origin.x = 50;
           this.timer = Date.now();
-          this.delay = 1500;
-          this.bubbles = [];
+          this.delay = 600;
+          this.bubbleDirection = 1;
           app.stage.addChild(this.origin);
         }
 
@@ -83,28 +86,40 @@
 
           //Spawn new bubbles if possible
           if (
-            this.bubbles.length <= 10 &&
+            this.origin.children.length <= this.maxBubbles &&
             Date.now() >= this.timer + this.delay
           ) {
             this.spawnBubble();
-            this.timer = Date.now();
+            this.timer = Date.now() + Math.floor(Math.random() * 250);
           }
           this.moveBubbles();
         }
 
         spawnBubble() {
           const bubble = new PIXI.Graphics();
-          bubble.beginFill(0xffffff);
-          bubble.drawCircle(30, 30, 30);
+          const radius = Math.floor(Math.random() * 15) + 15;
+          bubble.movementDirection = -1;
+          bubble.sineMultiplier =
+            this.bubbleDirection * (Math.floor(Math.random() * 50) + 20);
+          bubble.buoyancy = 5 - radius / 7;
+          bubble.beginFill(0x333333);
+          bubble.drawCircle(0, 0, radius + 1);
+          bubble.beginFill(0x77ffff);
+          bubble.drawCircle(0, 0, radius);
+          bubble.beginFill(0x99eeff);
+          bubble.alpha = 0.4;
+          bubble.drawCircle(2, -2, radius - 3);
           bubble.endFill();
           this.origin.addChild(bubble);
-          this.bubbles.push(bubble);
+          const possibleDirections = [1, -1];
+          this.bubbleDirection *= possibleDirections[Math.floor(Math.random())];
         }
 
         moveBubbles() {
           this.origin.children.forEach((bubble) => {
-            bubble.x = this.origin.x + Math.sin(counter / 40) * 100;
-            bubble.y -= 1;
+            bubble.x =
+              this.origin.x + Math.sin(counter / 70) * bubble.sineMultiplier;
+            bubble.y -= bubble.buoyancy;
           });
         }
       }
