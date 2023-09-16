@@ -62,6 +62,53 @@
         }
       }
 
+      class Bubbler {
+        constructor() {
+          this.origin = new PIXI.Container();
+          this.origin.y = 400;
+          this.origin.x = 50;
+          this.timer = Date.now();
+          this.delay = 1500;
+          this.bubbles = [];
+          app.stage.addChild(this.origin);
+        }
+
+        tick() {
+          // Clear old bubbles
+          this.origin.children.forEach((bubble) => {
+            if (bubble.y < -this.origin.y) {
+              bubble.destroy();
+            }
+          });
+
+          //Spawn new bubbles if possible
+          if (
+            this.bubbles.length <= 10 &&
+            Date.now() >= this.timer + this.delay
+          ) {
+            this.spawnBubble();
+            this.timer = Date.now();
+          }
+          this.moveBubbles();
+        }
+
+        spawnBubble() {
+          const bubble = new PIXI.Graphics();
+          bubble.beginFill(0xffffff);
+          bubble.drawCircle(30, 30, 30);
+          bubble.endFill();
+          this.origin.addChild(bubble);
+          this.bubbles.push(bubble);
+        }
+
+        moveBubbles() {
+          this.origin.children.forEach((bubble) => {
+            bubble.x = this.origin.x + Math.sin(counter / 40) * 100;
+            bubble.y -= 1;
+          });
+        }
+      }
+
       document.body.appendChild(app.view);
 
       // Add our first sprite
@@ -80,34 +127,10 @@
 
       // // fish1.scale.x = 1;
 
-      // let fish2 = PIXI.Sprite.from('img/fish.png');
-      // fish2.scale.set(0.25);
-      // fish2.x = 400;
-      // fish2.y = 400;
-
-      // fish2.anchor.set(0.5);
-
-      // fish2.angle = 20;
-
-      // fish2.tint = 0xff9999;
-
-      // //fish2.width = 400;
-
-      // fish2.scale.x *= -1;
-
-      // const fish1 = PIXI.Sprite.from('img/fish.png');
-      // fish1.scale.set(0.2);
-      // fish1.anchor.set(0.5);
-      // const fishContainer1 = new PIXI.Container();
-      // fishContainer1.x = 300;
-      // fishContainer1.addChild(fish1);
-
-      // app.stage.addChild(fishContainer1);
+      // Our actors
       const fish2 = new Fish('img/fish.png', 0.2);
+      const bubbler = new Bubbler();
       fish2.show();
-      // Add the sprite to the stage
-      //app.stage.addChild(fish1);
-      //app.stage.addChild(fish2);
 
       let counter = 0;
       function loop() {
@@ -117,11 +140,7 @@
         fish2.wiggle(5, 250);
         fish2.moveX(320 + Math.sin(counter / 100) * 300);
         fish2.moveY(100 + Math.sin(counter / 40) * 10);
-
-        // fishContainer1.x = 320 + Math.sin(counter / 100) * 300;
-
-        // Body wiggle movement
-        // fish1.scale.x = 0.25 + Math.sin(counter / 2) / 400;
+        bubbler.tick();
         requestAnimationFrame(loop);
       }
       loop();
