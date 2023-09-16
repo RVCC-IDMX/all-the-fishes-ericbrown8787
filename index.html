@@ -16,7 +16,6 @@
         height: 480,
         backgroundColor: 0xd4f1f9,
       });
-
       class Fish {
         // Sprite should be side view drawing of fish looking to the right
         constructor(imagePath, scale, tint = null, baseX = 0, baseY = 0) {
@@ -32,11 +31,18 @@
           this.previousPos = this.body.x;
         }
 
-        tick() {}
+        tick() {
+          this.wiggle(5, 250);
+          this.moveX(320 + Math.sin(counter / 100) * 300);
+          this.moveY(100 + Math.sin(counter / 40) * 10);
+        }
         orientSprite() {
           if (this.body.x < this.previousPos && this.sprite.scale.x < 0) {
             this.sprite.scale.x = Math.abs(this.sprite.scale.x);
-          } else if (this.body.x > previousPos && this.sprite.scale.x > 0) {
+          } else if (
+            this.body.x > this.previousPos &&
+            this.sprite.scale.x > 0
+          ) {
             this.sprite.scale.x *= -1;
           }
         }
@@ -68,7 +74,7 @@
         constructor() {
           this.origin = new PIXI.Container();
           this.maxBubbles = 20;
-          this.origin.y = 450;
+          this.origin.y = app.renderer.height;
           this.origin.x = 50;
           this.timer = Date.now();
           this.delay = 600;
@@ -126,36 +132,31 @@
 
       document.body.appendChild(app.view);
 
-      // Add our first sprite
-      // let fish1 = PIXI.Sprite.from('img/fish.png');
-      // fish1.scale.set(0.25);
-      // fish1.x = 300;
-      // fish1.y = 300;
-
-      // fish1.anchor.set(0.5);
-
       // fish1.angle = 40;
 
-      // fish1.tint = 0xffcc40;
-
-      // //fish1.width = 400;
-
-      // // fish1.scale.x = 1;
-
       // Our actors
-      const fish2 = new Fish('img/fish.png', 0.2);
+      const sand = new PIXI.Graphics();
+      sand.beginFill(0xc2b280);
+      // sand.lineStyle(5, 0xff0000);
+      sand.drawRect(
+        0,
+        app.renderer.height - 80,
+        app.renderer.width,
+        app.renderer.height
+      );
+
+      app.stage.addChild(sand);
       const bubbler = new Bubbler();
-      fish2.show();
+      const fish1 = new Fish('img/fish.png', 0.2);
+
+      fish1.show();
 
       let counter = 0;
       function loop() {
         counter++;
-        // fish1.y = 200 + Math.sin(counter / 40) * 10;
-        previousPos = fish2.body.x;
-        fish2.wiggle(5, 250);
-        fish2.moveX(320 + Math.sin(counter / 100) * 300);
-        fish2.moveY(100 + Math.sin(counter / 40) * 10);
         bubbler.tick();
+        fish1.tick();
+
         requestAnimationFrame(loop);
       }
       loop();
