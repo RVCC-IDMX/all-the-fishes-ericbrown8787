@@ -16,25 +16,51 @@
         height: 480,
         backgroundColor: 0xd4f1f9,
       });
-      class Fish {
-        // Sprite should be side view drawing of fish looking to the right
-        constructor(imagePath, scale, tint = null, baseX = 0, baseY = 0) {
-          this.sprite = PIXI.Sprite.from(imagePath);
-          if (tint) {
-            this.sprite.tint = tint;
-          }
 
+      class Counter {
+        // For generating unique counters so all of the objects start at different spots on the sine wave
+        constructor() {
+          this.value = Math.floor(Math.random() * 100);
+        }
+
+        increment() {
+          this.value += 1;
+        }
+      }
+
+      class Actor {
+        // We don't really get interfaces in JS, so I'll take what I can get.
+        constructor() {
+          this.counter = new Counter();
+        }
+      }
+      class Fish extends Actor {
+        // Sprite should be side view drawing of fish looking to the right
+        constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
+          super();
+          this.sprite = PIXI.Sprite.from(imagePath);
+          this.baseX = baseX;
+          this.baseY = baseY;
+          this.scale = Math.abs(scale); // Not allowing negative values for scale.
+          this.xVariance = xVariance;
+          this.yVariance = yVariance;
           this.sprite.anchor.set(0.5);
-          this.sprite.scale.set(Math.abs(scale)); // Not allowing negative values for scale.
+          this.sprite.scale.set(this.scale);
           this.body = new PIXI.Container();
           this.body.addChild(this.sprite);
           this.previousPos = this.body.x;
+          app.stage.addChild(this.body);
         }
 
         tick() {
           this.wiggle(5, 250);
-          this.moveX(320 + Math.sin(counter / 100) * 300);
-          this.moveY(100 + Math.sin(counter / 40) * 10);
+          this.moveX(
+            this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
+          );
+          this.moveY(
+            this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
+          );
+          this.counter.increment();
         }
         orientSprite() {
           if (this.body.x < this.previousPos && this.sprite.scale.x < 0) {
@@ -56,22 +82,42 @@
           this.body.y = y;
         }
 
-        move() {
-          this.wiggle(5, 250);
-        }
-
         wiggle(wiggleFrequency, wiggleIntensity) {
           this.sprite.scale.x =
-            0.25 + Math.sin(counter / wiggleFrequency) / wiggleIntensity;
-        }
-
-        show() {
-          app.stage.addChild(this.body);
+            this.scale +
+            Math.sin(this.counter.value / wiggleFrequency) / wiggleIntensity;
         }
       }
 
-      class Bubbler {
+      class School extends Actor {
+        constructor(x, y) {
+          super();
+          this.origin = new PIXI.Container();
+          this.origin.x = x;
+          this.origin.y = y;
+          this.fish = [
+            new Fish('img/fish.png', 0.1, 0, 0, 50, 10),
+            new Fish('img/fish.png', 0.1, 50, 50, 50, 10),
+            new Fish('img/fish.png', 0.1, 50, -50, 50, 10),
+          ];
+
+          this.fish.forEach((fish) => {
+            fish.counter = this.counter;
+            this.origin.addChild(fish.body);
+          });
+          app.stage.addChild(this.origin);
+        }
+
+        tick() {
+          this.fish.forEach((fish) => fish.tick());
+        }
+
+        spawnFish() {}
+      }
+
+      class Bubbler extends Actor {
         constructor() {
+          super();
           this.origin = new PIXI.Container();
           this.maxBubbles = 20;
           this.origin.y = app.renderer.height;
@@ -99,6 +145,7 @@
             this.timer = Date.now() + Math.floor(Math.random() * 250);
           }
           this.moveBubbles();
+          this.counter.increment();
         }
 
         spawnBubble() {
@@ -124,7 +171,8 @@
         moveBubbles() {
           this.origin.children.forEach((bubble) => {
             bubble.x =
-              this.origin.x + Math.sin(counter / 70) * bubble.sineMultiplier;
+              this.origin.x +
+              Math.sin(this.counter.value / 70) * bubble.sineMultiplier;
             bubble.y -= bubble.buoyancy;
           });
         }
@@ -147,15 +195,14 @@
 
       app.stage.addChild(sand);
       const bubbler = new Bubbler();
-      const fish1 = new Fish('img/fish.png', 0.2);
-
-      fish1.show();
-
-      let counter = 0;
+      const fish1 = new Fish('img/fish.png', 0.2, 320, 100, 250, 10);
+      const school = new School(300, 300);
+      // let counter = 0;
       function loop() {
-        counter++;
+        // counter++;
         bubbler.tick();
         fish1.tick();
+        school.tick();
 
         requestAnimationFrame(loop);
       }
