@@ -88,6 +88,59 @@
             Math.sin(this.counter.value / wiggleFrequency) / wiggleIntensity;
         }
       }
+      class CamoFish extends Fish {
+        constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
+          super(imagePath, scale, baseX, baseY, xVariance, yVariance);
+          this.color = {
+            red: 0,
+            green: 0,
+            blue: 0,
+          };
+          this.changeRate = 1;
+        }
+
+        tick() {
+          this.wiggle(5, 250);
+          this.moveX(
+            this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
+          );
+          this.moveY(
+            this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
+          );
+          this.counter.increment();
+
+          // Change colors
+          this.changeColor();
+        }
+
+        changeColor() {
+          this.color.red = Math.round(
+            Math.sin(((2 * Math.PI) / 60) * this.counter.value) * 127 + 128
+          );
+          this.color.green = Math.round(
+            Math.sin(
+              ((2 * Math.PI) / 60) * this.counter.value + (2 * Math.PI) / 3
+            ) *
+              127 +
+              128
+          );
+          this.color.blue = Math.round(
+            Math.sin(
+              ((2 * Math.PI) / 60) * this.counter.value + (4 * Math.PI) / 3
+            ) *
+              127 +
+              128
+          );
+
+          const newColor = Number(
+            `0x${this.color.red.toString(16)}${this.color.green.toString(
+              16
+            )}${this.color.blue.toString(16)}`
+          );
+          this.sprite.tint = newColor;
+          console.log(newColor);
+        }
+      }
 
       class School extends Actor {
         constructor(x, y) {
@@ -196,12 +249,14 @@
       app.stage.addChild(sand);
       const bubbler = new Bubbler();
       const fish1 = new Fish('img/fish.png', 0.2, 320, 100, 250, 10);
+      const fish2 = new CamoFish('img/fish.png', 0.2, 320, 200, 250, 10);
       const school = new School(300, 300);
       // let counter = 0;
       function loop() {
         // counter++;
         bubbler.tick();
         fish1.tick();
+        fish2.tick();
         school.tick();
 
         requestAnimationFrame(loop);
