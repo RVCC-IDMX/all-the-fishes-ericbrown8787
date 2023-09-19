@@ -233,6 +233,31 @@
       }
     }
 
+    class Plant extends Actor {
+      constructor(imagePath, scale, x, y) {
+        super();
+        this.sprite = PIXI.Sprite.from(imagePath);
+        this.sprite.anchor.set(.5)
+        this.sprite.scale.set(scale)
+        this.sprite.x = x
+        this.sprite.y = y
+        this.sprite.filters = [new PIXI.NoiseFilter(0.9, 9)]
+        this.sprite.alpha = .8
+        this.sprite.tint = 0x999999
+        app.stage.addChild(this.sprite);
+      }
+
+      tick() {
+        // this.wiggle(0, 250);
+        this.counter.increment();
+      }
+
+      wiggle(wiggleFrequency, wiggleIntensity) {
+        this.sprite.scale.x = this.sprite.scale + (Math.sin(this.counter.value / wiggleFrequency) / wiggleIntensity)
+
+      }
+    }
+
     document.body.appendChild(app.view);
 
     // fish1.angle = 40;
@@ -283,17 +308,10 @@
     rocks.addChild(rock1, rock2, rock3);
 
     // Plant
-    const plant = PIXI.Sprite.from('img/plant.png')
-    plant.anchor.set(.5)
-    plant.scale.set(.8)
-    plant.x = 520
-    plant.y = 270
-    plant.filters = [new PIXI.NoiseFilter(0.9, 9)]
-    plant.alpha = .8
-    plant.tint = 0x999999
+    const plant = new Plant('img/plant.png', .8, 520, 260)
 
 
-    app.stage.addChild(rocks, plant);
+    app.stage.addChild(rocks);
 
     // let counter = 0;
     function loop() {
@@ -302,6 +320,7 @@
       fish1.tick();
       fish2.tick();
       school.tick();
+      plant.tick();
 
       requestAnimationFrame(loop);
     }
