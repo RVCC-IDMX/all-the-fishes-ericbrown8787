@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>All the Fishes</title>
   <script src="https://pixijs.download/release/pixi.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/pixi-filters@latest/dist/pixi-filters.js"></script> -->
 </head>
 
 <body>
@@ -22,7 +23,7 @@
     class Counter {
       // For generating unique counters so all of the objects start at different spots on the sine wave
       constructor() {
-        this.value = Math.floor(Math.random() * 100);
+        this.value = Math.floor(Math.random() * 1000);
       }
 
       increment() {
@@ -281,7 +282,18 @@
 
     rocks.addChild(rock1, rock2, rock3);
 
-    app.stage.addChild(rocks);
+    // Plant
+    const plant = PIXI.Sprite.from('img/plant.png')
+    plant.anchor.set(.5)
+    plant.scale.set(.8)
+    plant.x = 520
+    plant.y = 270
+    plant.filters = [new PIXI.NoiseFilter(0.9, 9)]
+    plant.alpha = .8
+    plant.tint = 0x999999
+
+
+    app.stage.addChild(rocks, plant);
 
     // let counter = 0;
     function loop() {
