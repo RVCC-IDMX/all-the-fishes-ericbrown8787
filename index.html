@@ -1,331 +1,318 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>All the Fishes</title>
+    <script src="https://pixijs.download/release/pixi.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js
+"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>All the Fishes</title>
-  <script src="https://pixijs.download/release/pixi.js"></script>
-  <!-- <script src="https://cdn.jsdelivr.net/npm/pixi-filters@latest/dist/pixi-filters.js"></script> -->
-</head>
+  <body>
+    <script>
+      // Hint Put each fish in a container. Move fish by moving container and animate fish by selecting fish specifically.
 
-<body>
-  <script>
-    // Hint Put each fish in a container. Move fish by moving container and animate fish by selecting fish specifically.
+      // The app
+      const app = new PIXI.Application({
+        width: 640,
+        height: 480,
+        backgroundColor: 0xd6f1ff,
+      });
 
-    // The app
-    const app = new PIXI.Application({
-      width: 640,
-      height: 480,
-      backgroundColor: 0xd4f1f9,
-    });
+      class Counter {
+        // For generating unique counters so all of the objects start at different spots on the sine wave
+        constructor() {
+          this.value = Math.floor(Math.random() * 1000);
+        }
 
-    class Counter {
-      // For generating unique counters so all of the objects start at different spots on the sine wave
-      constructor() {
-        this.value = Math.floor(Math.random() * 1000);
-      }
-
-      increment() {
-        this.value += 1;
-      }
-    }
-
-    class Actor {
-      // We don't really get interfaces in JS, so I'll take what I can get.
-      constructor() {
-        this.counter = new Counter();
-      }
-    }
-    class Fish extends Actor {
-      // Sprite should be side view drawing of fish looking to the right
-      constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
-        super();
-        this.sprite = PIXI.Sprite.from(imagePath);
-        this.baseX = baseX;
-        this.baseY = baseY;
-        this.scale = Math.abs(scale); // Not allowing negative values for scale.
-        this.xVariance = xVariance;
-        this.yVariance = yVariance;
-        this.sprite.anchor.set(0.5);
-        this.sprite.scale.set(this.scale);
-        this.body = new PIXI.Container();
-        this.body.addChild(this.sprite);
-        this.previousPos = this.body.x;
-        app.stage.addChild(this.body);
-      }
-
-      tick() {
-        this.wiggle(5, 250);
-        this.moveX(
-          this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
-        );
-        this.moveY(
-          this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
-        );
-        this.counter.increment();
-      }
-      orientSprite() {
-        if (this.body.x < this.previousPos && this.sprite.scale.x < 0) {
-          this.sprite.scale.x = Math.abs(this.sprite.scale.x);
-        } else if (
-          this.body.x > this.previousPos &&
-          this.sprite.scale.x > 0
-        ) {
-          this.sprite.scale.x *= -1;
+        increment() {
+          this.value += 1;
         }
       }
-      moveX(x) {
-        this.body.x = x;
-        this.orientSprite();
-        this.previousPos = this.body.x;
+
+      class Actor {
+        // We don't really get interfaces in JS, so I'll take what I can get.
+        constructor() {
+          this.counter = new Counter();
+        }
       }
+      class Fish extends Actor {
+        // Sprite should be side view drawing of fish looking to the right
+        constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
+          super();
+          this.sprite = PIXI.Sprite.from(imagePath);
+          this.baseX = baseX;
+          this.baseY = baseY;
+          this.scale = Math.abs(scale); // Not allowing negative values for scale.
+          this.xVariance = xVariance;
+          this.yVariance = yVariance;
+          this.sprite.anchor.set(0.5);
+          this.sprite.scale.set(this.scale);
+          this.body = new PIXI.Container();
+          this.body.addChild(this.sprite);
+          this.previousPos = this.body.x;
+          app.stage.addChild(this.body);
+        }
 
-      moveY(y) {
-        this.body.y = y;
-      }
+        tick() {
+          this.wiggle(5, 220);
+          this.moveX(
+            this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
+          );
+          this.moveY(
+            this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
+          );
+          this.counter.increment();
+        }
 
-      wiggle(wiggleFrequency, wiggleIntensity) {
-        this.sprite.scale.x =
-          this.scale +
-          Math.sin(this.counter.value / wiggleFrequency) / wiggleIntensity;
-      }
-    }
-    class CamoFish extends Fish {
-      constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
-        super(imagePath, scale, baseX, baseY, xVariance, yVariance);
-        this.color = {
-          red: 0,
-          green: 0,
-          blue: 0,
-        };
-        this.changeRate = 1;
-      }
-
-      tick() {
-        this.wiggle(5, 250);
-        this.moveX(
-          this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
-        );
-        this.moveY(
-          this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
-        );
-        this.counter.increment();
-
-        // Change colors
-        this.changeColor();
-      }
-
-      changeColor() {
-        this.color.red = Math.round(
-          Math.sin(((2 * Math.PI) / 60) * this.counter.value) * 127 + 128
-        );
-        this.color.green = Math.round(
-          Math.sin(
-            ((2 * Math.PI) / 60) * this.counter.value + (2 * Math.PI) / 3
-          ) *
-          127 +
-          128
-        );
-        this.color.blue = Math.round(
-          Math.sin(
-            ((2 * Math.PI) / 60) * this.counter.value + (4 * Math.PI) / 3
-          ) *
-          127 +
-          128
-        );
-
-        const newColor = Number(
-          `0x${this.color.red.toString(16)}${this.color.green.toString(
-            16
-          )}${this.color.blue.toString(16)}`
-        );
-        this.sprite.tint = newColor;
-      }
-    }
-
-    class School extends Actor {
-      constructor(x, y) {
-        super();
-        this.origin = new PIXI.Container();
-        this.origin.x = x;
-        this.origin.y = y;
-        this.fish = [
-          new Fish('img/fish.png', 0.1, 0, 0, 50, 10),
-          new Fish('img/fish.png', 0.1, 50, 50, 50, 10),
-          new Fish('img/fish.png', 0.1, 50, -50, 50, 10),
-        ];
-
-        this.fish.forEach((fish) => {
-          fish.counter = this.counter;
-          this.origin.addChild(fish.body);
-        });
-        app.stage.addChild(this.origin);
-      }
-
-      tick() {
-        this.fish.forEach((fish) => fish.tick());
-      }
-    }
-
-    class Bubbler extends Actor {
-      constructor() {
-        super();
-        this.origin = new PIXI.Container();
-        this.maxBubbles = 20;
-        this.origin.y = app.renderer.height;
-        this.origin.x = 50;
-        this.timer = Date.now();
-        this.delay = 600;
-        this.bubbleDirection = 1;
-
-        app.stage.addChild(this.origin);
-      }
-
-      tick() {
-        // Clear old bubbles
-        this.origin.children.forEach((bubble) => {
-          if (bubble.y < -this.origin.y) {
-            bubble.destroy();
+        orientSprite() {
+          if (this.body.x < this.previousPos && this.sprite.scale.x < 0) {
+            this.sprite.scale.x = Math.abs(this.sprite.scale.x);
+          } else if (
+            this.body.x > this.previousPos &&
+            this.sprite.scale.x > 0
+          ) {
+            this.sprite.scale.x *= -1;
           }
-        });
-
-        //Spawn new bubbles if possible
-        if (
-          this.origin.children.length <= this.maxBubbles &&
-          Date.now() >= this.timer + this.delay
-        ) {
-          this.spawnBubble();
-          this.timer = Date.now() + Math.floor(Math.random() * 250);
         }
-        this.moveBubbles();
-        this.counter.increment();
+
+        moveX(x) {
+          this.body.x = x;
+          this.orientSprite();
+          this.previousPos = this.body.x;
+        }
+
+        moveY(y) {
+          this.body.y = y;
+        }
+
+        wiggle(wiggleFrequency, wiggleIntensity) {
+          this.sprite.scale.x =
+            this.scale +
+            Math.sin(this.counter.value / wiggleFrequency) / wiggleIntensity;
+        }
+      }
+      class CamoFish extends Fish {
+        constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
+          super(imagePath, scale, baseX, baseY, xVariance, yVariance);
+          this.colorScale = chroma
+            .scale(['green', 'blue', 'indigo', 'violet'])
+            .mode('lrgb')
+            .gamma(2)
+            .colors(1000)
+            .map((color) => Number(`0x${color.slice(1, color.length)}`));
+
+          this.changeRate = 200;
+        }
+
+        tick() {
+          this.wiggle(5, 300);
+          this.moveX(
+            this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
+          );
+          this.moveY(
+            this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
+          );
+          this.counter.increment();
+
+          // Change colors
+          this.changeColor();
+        }
+
+        changeColor() {
+          const colorIndex =
+            (Math.sin(this.counter.value / this.changeRate) + 1) *
+            (this.colorScale.length / 2);
+          this.sprite.tint = this.colorScale[Math.floor(colorIndex)];
+        }
       }
 
-      spawnBubble() {
-        const bubble = new PIXI.Graphics();
-        const radius = Math.floor(Math.random() * 15) + 15;
-        bubble.movementDirection = -1;
-        bubble.sineMultiplier =
-          this.bubbleDirection * (Math.floor(Math.random() * 50) + 20);
-        bubble.buoyancy = 5 - radius / 7;
-        bubble.beginFill(0x333333);
-        bubble.drawCircle(0, 0, radius + 1);
-        bubble.beginFill(0x77ffff);
-        bubble.drawCircle(0, 0, radius);
-        bubble.beginFill(0x99eeff);
-        bubble.alpha = 0.4;
-        bubble.drawCircle(2, -2, radius - 3);
-        bubble.endFill();
+      class School extends Actor {
+        constructor(baseX, baseY, xVariance, yVariance) {
+          super();
+          this.baseX = baseX;
+          this.baseY = baseY;
+          this.xVariance = xVariance;
+          this.yVariance = yVariance;
+          this.origin = new PIXI.Container();
+          this.origin.x = baseX;
+          this.origin.y = baseY;
+          this.previousPos = this.origin.x;
+          this.fish = [
+            new Fish('img/fish.png', 0.1, 0, 0, xVariance, yVariance),
+            new Fish('img/fish.png', 0.1, 50, 50, xVariance, yVariance),
+            new Fish('img/fish.png', 0.1, 50, -50, xVariance, yVariance),
+          ];
 
-        this.origin.addChild(bubble);
-        const possibleDirections = [1, -1];
-        this.bubbleDirection *= possibleDirections[Math.floor(Math.random())];
+          this.fish.forEach((fish) => {
+            fish.counter = this.counter;
+            this.origin.addChild(fish.body);
+          });
+          app.stage.addChild(this.origin);
+        }
+
+        tick() {
+          this.fish.forEach((fish) => fish.tick());
+          this.counter.increment();
+        }
       }
 
-      moveBubbles() {
-        this.origin.children.forEach((bubble) => {
-          bubble.x =
-            this.origin.x +
-            Math.sin(this.counter.value / 70) * bubble.sineMultiplier;
-          bubble.y -= bubble.buoyancy;
-        });
+      class Bubbler extends Actor {
+        constructor() {
+          super();
+          this.origin = new PIXI.Container();
+          this.maxBubbles = 10;
+          this.origin.y = app.renderer.height;
+          this.origin.x = 50;
+          this.timer = Date.now();
+          this.delay = 200;
+          this.bubbleDirection = 1;
+
+          app.stage.addChild(this.origin);
+        }
+
+        tick() {
+          // Clear old bubbles
+          this.origin.children.forEach((bubble) => {
+            if (bubble.y < -this.origin.y) {
+              bubble.destroy();
+            }
+          });
+
+          //Spawn new bubbles if possible
+          if (
+            this.origin.children.length <= this.maxBubbles &&
+            Date.now() >= this.timer + this.delay
+          ) {
+            this.spawnBubble();
+            this.timer = Date.now() + Math.floor(Math.random() * 250);
+          }
+          this.moveBubbles();
+          this.counter.increment();
+        }
+
+        spawnBubble() {
+          const bubble = new PIXI.Graphics();
+          const radius = Math.floor(Math.random() * 15) + 15;
+          bubble.movementDirection = -1;
+          bubble.sineMultiplier =
+            this.bubbleDirection * (Math.floor(Math.random() * 50) + 20);
+          bubble.buoyancy = radius / 7;
+          bubble.beginFill(0x333333);
+          bubble.drawCircle(0, 0, radius + 1);
+          bubble.beginFill(0x77ffff);
+          bubble.drawCircle(0, 0, radius);
+          bubble.beginFill(0x99eeff);
+          bubble.alpha = 0.2;
+          bubble.drawCircle(2, -2, radius - 3);
+          bubble.endFill();
+
+          this.origin.addChild(bubble);
+          const possibleDirections = [1, -1];
+          this.bubbleDirection *= possibleDirections[Math.round(Math.random())];
+        }
+
+        moveBubbles() {
+          this.origin.children.forEach((bubble) => {
+            bubble.x =
+              this.origin.x +
+              Math.sin(this.counter.value / 70) * bubble.sineMultiplier;
+            bubble.y -= bubble.buoyancy;
+          });
+        }
       }
-    }
 
-    class Plant extends Actor {
-      constructor(imagePath, scale, x, y) {
-        super();
-        this.sprite = PIXI.Sprite.from(imagePath);
-        this.sprite.anchor.set(.5)
-        this.sprite.scale.set(scale)
-        this.sprite.x = x
-        this.sprite.y = y
-        this.sprite.filters = [new PIXI.NoiseFilter(0.9, 9)]
-        this.sprite.alpha = .8
-        this.sprite.tint = 0x999999
-        app.stage.addChild(this.sprite);
+      class Plant extends Actor {
+        constructor(imagePath, scale, x, y) {
+          super();
+          this.sprite = PIXI.Sprite.from(imagePath);
+          this.sprite.anchor.set(1);
+          this.scale = scale;
+          this.sprite.scale.set(scale);
+          this.sprite.x = x;
+          this.sprite.y = y;
+          this.sprite.filters = [new PIXI.NoiseFilter(0.9, 9)];
+          this.sprite.alpha = 0.8;
+          this.sprite.tint = 0x999999;
+          app.stage.addChild(this.sprite);
+        }
+
+        tick() {
+          this.counter.increment();
+        }
       }
 
-      tick() {
-        // this.wiggle(0, 250);
-        this.counter.increment();
+      document.body.appendChild(app.view);
+
+      // Setting up scenery
+      const backgroundMask = new PIXI.Graphics();
+      backgroundMask.beginFill(0xffffff);
+      backgroundMask.drawRect(0, 0, app.renderer.width, app.renderer.height);
+      backgroundMask.alpha = 0.5;
+      backgroundMask.filters = [
+        new PIXI.NoiseFilter(0.8, 6),
+        new PIXI.BlurFilter(),
+      ];
+      app.stage.addChild(backgroundMask);
+      const sandNoise = new PIXI.NoiseFilter(0.4, 6);
+      const sand = new PIXI.Graphics();
+      sand.beginFill(0xc2b280);
+      sand.drawRect(
+        0,
+        app.renderer.height - 80,
+        app.renderer.width,
+        app.renderer.height
+      );
+      sand.filters = [sandNoise];
+
+      app.stage.addChild(sand);
+
+      // Rock Pile
+      const rocks = new PIXI.Container();
+      const rock1 = PIXI.Sprite.from('img/rock.png');
+      const rock2 = PIXI.Sprite.from('img/rock.png');
+      const rock3 = PIXI.Sprite.from('img/rock.png');
+      rock1.anchor.set(0.5);
+      rock2.anchor.set(0.5);
+      rock3.anchor.set(0.5);
+      rock1.scale.set(0.5);
+      rock1.tint = 0xaaaaaa;
+      rock2.scale.set(0.4);
+      rock2.tint = 0xcccccc;
+      rock3.scale.set(0.3);
+      rock3.tint = 0xeeeeee;
+
+      rock2.x = -60;
+      rock2.y = 26;
+
+      rock3.x = 88;
+      rock3.y = 35;
+
+      rocks.x = 120;
+      rocks.y = 422;
+
+      // Our actors, in order of appearance
+      const fish1 = new Fish('img/fish.png', 0.2, 320, 100, 250, 10);
+      const fish2 = new CamoFish('img/fish2.png', 0.15, 320, 200, 250, 10);
+      const school = new School(300, 300, 150, 0.1);
+      const bubbler = new Bubbler();
+      const plant = new Plant('img/plant.png', 0.7, 620, 450);
+      rocks.addChild(rock1, rock2, rock3);
+      app.stage.addChild(rocks);
+
+      // let counter = 0;
+      function loop() {
+        // counter++;
+        bubbler.tick();
+        fish1.tick();
+        fish2.tick();
+        school.tick();
+        plant.tick();
+
+        requestAnimationFrame(loop);
       }
-
-      wiggle(wiggleFrequency, wiggleIntensity) {
-        this.sprite.scale.x = this.sprite.scale + (Math.sin(this.counter.value / wiggleFrequency) / wiggleIntensity)
-
-      }
-    }
-
-    document.body.appendChild(app.view);
-
-    // fish1.angle = 40;
-
-    // Our actors
-    const sandNoise = new PIXI.NoiseFilter(0.4, 6);
-    const sand = new PIXI.Graphics();
-    sand.beginFill(0xc2b280);
-    // sand.lineStyle(5, 0xff0000);
-    sand.drawRect(
-      0,
-      app.renderer.height - 80,
-      app.renderer.width,
-      app.renderer.height
-    );
-    sand.filters = [sandNoise];
-
-    app.stage.addChild(sand);
-    const bubbler = new Bubbler();
-    const fish1 = new Fish('img/fish.png', 0.2, 320, 100, 250, 10);
-    const fish2 = new CamoFish('img/fish.png', 0.2, 320, 200, 250, 10);
-    const school = new School(300, 300);
-    const rocks = new PIXI.Container();
-    const rock1 = PIXI.Sprite.from('img/rock.png');
-    const rock2 = PIXI.Sprite.from('img/rock.png');
-    const rock3 = PIXI.Sprite.from('img/rock.png');
-    rock1.anchor.set(.5)
-    rock2.anchor.set(.5)
-    rock3.anchor.set(.5)
-    rock1.scale.set(0.5);
-    rock1.tint = 0xAAAAAA;
-    rock2.scale.set(0.4);
-    rock2.tint = 0xCCCCCC;
-    rock3.scale.set(0.3);
-    rock3.tint = 0xEEEEEE;
-
-    rock2.x = -60
-    rock2.y = 26
-
-
-    rock3.x = 88;
-    rock3.y = 35
-
-
-    rocks.x = 120
-    rocks.y = 422;
-
-    rocks.addChild(rock1, rock2, rock3);
-
-    // Plant
-    const plant = new Plant('img/plant.png', .8, 520, 260)
-
-
-    app.stage.addChild(rocks);
-
-    // let counter = 0;
-    function loop() {
-      // counter++;
-      bubbler.tick();
-      fish1.tick();
-      fish2.tick();
-      school.tick();
-      plant.tick();
-
-      requestAnimationFrame(loop);
-    }
-    loop();
-  </script>
-</body>
-
+      loop();
+    </script>
+  </body>
 </html>
