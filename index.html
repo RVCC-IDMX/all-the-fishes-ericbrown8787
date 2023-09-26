@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -39,8 +40,9 @@
       }
       class Fish extends Actor {
         // Sprite should be side view drawing of fish looking to the right
-        constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
+        constructor(imagePath, scale, baseX, baseY, xVariance, yVariance, slider = null) {
           super();
+          this.slider = slider;
           this.sprite = PIXI.Sprite.from(imagePath);
           this.baseX = baseX;
           this.baseY = baseY;
@@ -57,6 +59,9 @@
 
         tick() {
           this.wiggle(5, 220);
+          if (this.slider) {
+            this.sprite.scale.set(slider.value * this.scale);
+          }
           this.moveX(
             this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
           );
@@ -243,6 +248,156 @@
         }
       }
 
+      // Our Button
+      class Button extends PIXI.Container {
+        constructor(label = "Button", w = 200, h = 50) {
+          super();
+          this.label = label;
+          this.h = h;
+          this.w = w;
+
+          // Make container interactive
+          this.interactive = true;
+
+          //Button Body
+          const buttonBody = new PIXI.Graphics();
+          buttonBody.beginFill(0xcccccc);
+          buttonBody.drawRect(0, 0, this.w, this.h);
+          buttonBody.endFill();
+          this.addChild(buttonBody);
+          this.buttonBody = buttonBody;
+
+          //Button Label
+          const buttonLabel = new PIXI.Text(this.label);
+          buttonLabel.anchor.set(0.5);
+          buttonLabel.x += buttonBody.width / 2;
+          buttonLabel.y += buttonBody.height / 2;
+          this.addChild(buttonLabel);
+          this.buttonLabel = buttonLabel;
+
+          // Event listeners
+          // this.on("pointertap", (e) => {
+          //   console.log(e);
+          //   const color = Math.random() * 0xffffff;
+          //   buttonBody.tint = color;
+          // });
+
+          this.on("pointerover", (e) => {
+            buttonBody.alpha = 0.7;
+          });
+
+          this.on("pointerout", (e) => {
+            buttonBody.alpha = 1;
+          });
+
+          // Draggable event listeners
+          this.draggable = false; //whether it can drag
+          this.dragging = false; //whether this is currently being dragged
+
+          // Offsets prevent button from snapping onto cursor upon dragging
+          this.offsetX;
+          this.offsteY;
+
+          this.on("pointerdown", (e) => {
+            if (!this.draggable) return;
+            this.dragging = true;
+            this.offsetX = this.x - e.global.x;
+            this.offsetY = this.y - e.global.y;
+          });
+
+          this.on("pointermove", (e) => {
+            if (!this.draggable) return;
+            // console.log(e.global.x, e.global.y);
+            if (this.dragging) {
+              this.x = e.global.x + this.offsetX;
+              this.y = e.global.y + this.offsetY;
+            }
+          });
+          this.on("pointerup", (e) => {
+            if (!this.draggable) return;
+            this.dragging = false;
+          });
+
+          // Failsafe. Just in case pointer ends up outside of button somehow
+          this.on("pointerupoutside", (e) => {
+            if (!this.draggable) return;
+            this.dragging = false;
+          });
+        }
+      }
+
+      class Toggle extends Button {
+        constructor(label, w, h) {
+          super(label, w, h);
+          // Extra variables
+          this.value = false;
+          // Event listeners
+          this.on("pointertap", (e) => {
+            this.value = !this.value;
+            console.log(this.value);
+
+            if (this.value == true) {
+              this.buttonBody.tint = 0x00cc00;
+            } else {
+              this.buttonBody.tint = 0xcccc00;
+            }
+          });
+        }
+      }
+
+      class Slider extends PIXI.Container {
+        constructor() {
+          super();
+          this.interactive = true;
+          // Extra Variables
+          this.dragging = false;
+          this.value = 0;
+
+          //The Track
+
+          const track = new PIXI.Graphics();
+          track.beginFill(0xeeeeee);
+          track.drawRect(0, -10, 300, 20);
+          track.endFill();
+
+          this.addChild(track);
+
+          // The Slide
+          const slide = new PIXI.Graphics();
+          slide.beginFill(0xcccccc);
+          slide.drawRect(-25, -25, 50, 50);
+          slide.endFill();
+
+          this.addChild(slide);
+
+          //Events
+          this.on("pointerdown", (e) => {
+            this.dragging = true;
+            console.log(e);
+          });
+
+          this.on("pointermove", (e) => {
+            if (this.dragging) {
+              // Move the slider
+              slide.x = e.global.x - this.getGlobalPosition().x;
+              // Check constraints
+              if (slide.x > track.width) slide.x = track.width;
+              if (slide.x < 0) slide.x = 0;
+              // Check value
+              this.value = slide.x / track.width;
+            }
+          });
+
+          this.on("pointerup", (e) => {
+            this.dragging = false;
+          });
+
+          this.on("pointerupoutside", (e) => {
+            this.dragging = false;
+          });
+        }
+      }
+
       document.body.appendChild(app.view);
 
       // Setting up scenery
@@ -298,9 +453,30 @@
       const school = new School(300, 300, 150, 0.1);
       const bubbler = new Bubbler();
       const plant = new Plant('img/plant.png', 0.7, 620, 450);
+
+      const button = new Button("Change Goldfish Color", 100, 50);
+
+      button.x = 50;
+      button.y = 380;
+      button.buttonLabel.scale.set(.8);
+
+      button.on("pointertap", e => {
+        const color = Math.random() * 0xffffff;
+        fish1.sprite.tint = color;
+      });
+
+      const slider = new Slider();
+
+      slider.x = 300;
+      slider.y = 450;
+
+      fish1.slider = slider;
+
       rocks.addChild(rock1, rock2, rock3);
       app.stage.addChild(rocks);
 
+      app.stage.addChild(button);
+      app.stage.addChild(slider);
       // let counter = 0;
       function loop() {
         // counter++;
@@ -315,4 +491,5 @@
       loop();
     </script>
   </body>
+
 </html>
