@@ -22,6 +22,10 @@ To simulate bubbles, I used PIXI's Graphics class to draw a series of semi-trans
 
 **Plant:** https://www.pngwing.com/en/free-png-zlzaj
 
+**Randomize Color Icon:** https://www.pngegg.com/en/png-izzkb
+
+**Magnifying Glass:** https://www.clipartmax.com/middle/m2H7K9H7K9i8d3Z5_magnifying-glass-pixel-art-from-the-science-pack-of-minecraft-cake-pixel/
+
 ---
 
 ### Additional Libraries Used:

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -155,21 +156,14 @@
           this.baseX = 0;
           this.baseY = 0;
           // Make container interactive
-          this.interactive = true;
+          this.interactive = true;;
 
-          //Button Body
+
           const sprite = PIXI.Sprite.from("img/fish.png");
-          sprite.scale.set(-0.15, 0.15);
+          sprite.scale.set(-.15, .15);
           sprite.anchor.set(0.5);
           this.addChild(sprite);
           this.sprite = sprite;
-
-          //Event listeners
-          // this.on("pointertap", (e) => {
-          //   console.log(e);
-          //   const color = Math.random() * 0xffffff;
-          //   sprite.tint = color;
-          // });
 
           this.on("pointerover", (e) => {
             sprite.alpha = 0.7;
@@ -216,7 +210,22 @@
           });
         }
 
-        tick() {}
+        tick() {
+          this.baseX = this.x;
+          this.baseY = this.y;
+          if (!this.dragging) {
+            this.idle();
+          }
+          this.counter.increment();
+        }
+
+        idle() {
+          this.sprite.scale.x = -.15 +
+            Math.sin(this.counter.value / 10) / 200;
+
+          this.sprite.scale.y = .15 +
+            Math.sin(this.counter.value / 10) / 200;
+        }
       }
 
       class School extends Actor {
@@ -336,7 +345,7 @@
 
       // Our Button
       class Button extends PIXI.Container {
-        constructor(label = "Button", w = 200, h = 50) {
+        constructor(label = "Button", w = 400, h = 90) {
           super();
           this.label = label;
           this.h = h;
@@ -346,18 +355,31 @@
           this.interactive = true;
 
           //Button Body
-          const buttonBody = new PIXI.Graphics();
-          buttonBody.beginFill(0xcccccc);
-          buttonBody.drawRect(0, 0, this.w, this.h);
-          buttonBody.endFill();
+          const buttonBackground = new PIXI.Graphics();
+          buttonBackground.beginFill(0x333333);
+          buttonBackground.alpha = .8;
+          buttonBackground.drawRoundedRect(-w / 2, -h / 2 + 10, this.w, this.h, 20);
+          buttonBackground.endFill();
+
+          this.addChild(buttonBackground);
+
+          const buttonBody = PIXI.Sprite.from("img/die.png");
+          buttonBody.anchor.set(.5);
+          buttonBody.scale.set(.1);
           this.addChild(buttonBody);
           this.buttonBody = buttonBody;
 
           //Button Label
-          const buttonLabel = new PIXI.Text(this.label);
+          const buttonLabel = new PIXI.Text(this.label, new PIXI.TextStyle({
+            fontFamily: ['Arial'],
+            fontSize: 16,
+            fontWeight: "bolder",
+            fill: 0xDDDDDD
+          }));
           buttonLabel.anchor.set(0.5);
-          buttonLabel.x += buttonBody.width / 2;
-          buttonLabel.y += buttonBody.height / 2;
+          buttonLabel.y += 35;
+          // buttonLabel.x += buttonBody.width / 2;
+          // buttonLabel.y += buttonBody.height / 2;
           this.addChild(buttonLabel);
           this.buttonLabel = buttonLabel;
 
@@ -412,25 +434,6 @@
         }
       }
 
-      class Toggle extends Button {
-        constructor(label, w, h) {
-          super(label, w, h);
-          // Extra variables
-          this.value = false;
-          // Event listeners
-          this.on("pointertap", (e) => {
-            this.value = !this.value;
-            console.log(this.value);
-
-            if (this.value == true) {
-              this.buttonBody.tint = 0x00cc00;
-            } else {
-              this.buttonBody.tint = 0xcccc00;
-            }
-          });
-        }
-      }
-
       class Slider extends PIXI.Container {
         constructor() {
           super();
@@ -442,17 +445,15 @@
           //The Track
 
           const track = new PIXI.Graphics();
-          track.beginFill(0xeeeeee);
-          track.drawRect(0, -10, 300, 20);
+          track.beginFill(0xBBCCFF);
+          track.drawRect(0, -10, 300, 15);
           track.endFill();
 
           this.addChild(track);
 
-          // The Slide
-          const slide = new PIXI.Graphics();
-          slide.beginFill(0xcccccc);
-          slide.drawRect(-25, -25, 50, 50);
-          slide.endFill();
+          const slide = PIXI.Sprite.from("img/magnifier.png");
+          slide.scale.set(.2);
+          slide.anchor.set(.5);
 
           this.addChild(slide);
 
@@ -534,7 +535,7 @@
       rocks.y = 422;
 
       // Our actors, in order of appearance
-      const fish1 = new Fish("img/fish.png", 0.2, 320, 100, 250, 10);
+      const fish1 = new Fish("img/fish2.png", 0.2, 320, 100, 250, 10);
       const fish2 = new CamoFish("img/fish2.png", 0.15, 320, 200, 250, 10);
       const fish3 = new DraggableFish(0.5);
       fish3.x = 50;
@@ -543,10 +544,10 @@
       const bubbler = new Bubbler();
       const plant = new Plant("img/plant.png", 0.7, 620, 450);
 
-      const button = new Button("Change Goldfish Color", 100, 50);
+      const button = new Button("Random Color", 120, 90);
 
-      button.x = 50;
-      button.y = 380;
+      button.x = 90;
+      button.y = 420;
       button.buttonLabel.scale.set(0.8);
 
       button.on("pointertap", (e) => {
@@ -557,7 +558,7 @@
       const slider = new Slider();
 
       slider.x = 300;
-      slider.y = 450;
+      slider.y = 435;
 
       fish1.slider = slider;
 
@@ -581,4 +582,5 @@
       loop();
     </script>
   </body>
+
 </html>

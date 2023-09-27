@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js
 "></script>
   </head>
+
   <body>
     <script>
       const app = new PIXI.Application({
@@ -132,11 +134,12 @@
 
           this.addChild(track);
 
-          // The Slide
+          //The Slide;
           const slide = new PIXI.Graphics();
           slide.beginFill(0xcccccc);
           slide.drawRect(-25, -25, 50, 50);
           slide.endFill();
+
 
           this.addChild(slide);
 
@@ -186,4 +189,5 @@
       app.stage.addChild(mySlider);
     </script>
   </body>
+
 </html>
