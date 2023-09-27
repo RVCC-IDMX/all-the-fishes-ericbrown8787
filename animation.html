@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animations</title>
+
+    <script src="https://pixijs.download/release/pixi.js"></script>
+</head>
+<body>
+    <script>
+              // The app
+      const app = new PIXI.Application({
+        width: 640,
+        height: 480,
+        backgroundColor: 0xd6f1ff,
+      });
+
+      class Counter {
+        // For generating unique counters so all of the objects start at different spots on the sine wave
+        constructor() {
+          this.value = Math.floor(Math.random() * 1000);
+        }
+    }
+
+    document.body.appendChild(app.view)
+
+    // Animator
+    const Animate = {
+
+    };
+
+    Animate.to = function(obj,end){
+
+      // Make a promise
+      return new Promise((resolve,reject)=>{
+
+        // Initial state parameters
+        const start = {
+          x: obj.x,
+          y: obj.y,
+          scaleX: obj.scale.x,
+          scaleY: obj.scale.y
+        };
+
+        // Set defaults
+        if (end.duration == undefined) end.duration = 0;
+        if (end.easing == undefined) end.easing = Animate.linear
+
+        // We need to know when we start
+        const startTime = Date.now();
+
+        //This is the object's animation loop
+        function loop() {
+          // Calculate delta
+          const ticker = Date.now() - startTime;
+          const delta = ticker/end.duration;
+          const ease = end.easing(delta)
+
+
+          // Are we done? Snap to end
+          if (delta >= 1 || end.duration === 0){
+            if (end.x != undefined){
+              obj.x = end.x;
+            }
+            if (end.y != undefined){
+            obj.y = end.y
+          }
+            if (end.scaleX != undefined){
+              obj.scale.x = end.scaleX;
+            }
+
+            if (end.scaleY != undefined) {
+              obj.scale.y = end.scaleY;
+            }
+
+            resolve();
+            return;
+          }
+
+          function lerp(a, b, n) {
+            return (1 - n) * a + n * b;
+          }
+
+          // lerp coordinates
+          if (end.x != undefined){
+            obj.x = lerp(start.x, end.x, ease)
+          }
+          if (end.y != undefined){
+            obj.y = lerp(start.y, end.y, ease)
+          }
+
+
+
+          // Lerp scale
+          if(end.scaleX != undefined){
+            obj.scale.x = lerp(start.scaleX, end.scaleX, ease)
+
+          }
+                    if (end.scaleY != undefined) {
+            obj.scale.y = lerp(start.scaleY, end.scaleY, ease)
+
+          }
+
+          // Loop
+          // Saving the animationID for later
+          obj.animationID = requestAnimationFrame(loop)
+        }
+        cancelAnimationFrame(obj.animationID)
+        loop()
+
+      })
+      
+    }
+
+    Animate.stop = function(obj){
+      cancelAnimationFrame(obj.animationID)
+    }
+
+    Animate.linear = x=>x;
+    
+    // Quadratic Easing
+    Animate.easeIn = x => x*x;
+
+    Animate.easeOut = x => 1-(1-x)*(1-x);
+
+    Animate.easeInOut = x => {
+      if (x<0.5) return 2*x*x;
+      return 1-Math.pow(-2 *x+2,2)/2
+    }
+
+
+    // Pause 
+    function pause(ms){
+      return new Promise((resolve,reject)=> 
+      setTimeout(resolve,ms))
+    }
+
+
+    //test 
+    const bob = PIXI.Sprite.from('img/fish.png')
+    bob.anchor.set(.5)
+    bob.scale.set(.25)
+
+    app.stage.addChild(bob)
+async function go(){
+
+  // A test function to demo an animation queue
+  await Animate.to(bob,{
+    scaleX: -.25
+  })
+    await Animate.to(bob, {
+    x: 400,
+    y: 200,
+    duration: 2000,
+      easing: Animate.easeInOut,
+  })
+    await Animate.to(bob, {
+    scaleX: .25,
+    duration: 500
+  })
+    await Animate.to(bob, {
+    x: 100,
+    y: 100,
+    duration: 2000,
+      easing: Animate.easeInOut,
+  })
+
+  await pause(2000)
+
+  await Animate.to(bob, {
+    x: 90,
+    y: 120,
+    duration: 2000,
+    easing: Animate.easeInOut,
+  })
+
+  go();
+}
+
+    window.addEventListener("load",go);
+
+    // Check easings.net for more easing functions
+    </script>
+</body>
+</html>
