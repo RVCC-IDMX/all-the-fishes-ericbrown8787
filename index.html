@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -40,8 +39,18 @@
       }
       class Fish extends Actor {
         // Sprite should be side view drawing of fish looking to the right
-        constructor(imagePath, scale, baseX, baseY, xVariance, yVariance, slider = null) {
+        constructor(
+          imagePath,
+          scale,
+          baseX,
+          baseY,
+          xVariance,
+          yVariance,
+          slider = null,
+          draggable = false
+        ) {
           super();
+
           this.slider = slider;
           this.sprite = PIXI.Sprite.from(imagePath);
           this.baseX = baseX;
@@ -54,21 +63,25 @@
           this.body = new PIXI.Container();
           this.body.addChild(this.sprite);
           this.previousPos = this.body.x;
+
           app.stage.addChild(this.body);
         }
 
         tick() {
-          this.wiggle(5, 220);
-          if (this.slider) {
-            this.sprite.scale.set(slider.value * this.scale);
+          if (!this.dragging) {
+            this.wiggle(5, 220);
+            if (this.slider) {
+              // If a slider is assigned to this fish, allows its size to be adjusted
+              this.sprite.scale.set(this.scale + slider.value * this.scale);
+            }
+            this.moveX(
+              this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
+            );
+            this.moveY(
+              this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
+            );
+            this.counter.increment();
           }
-          this.moveX(
-            this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
-          );
-          this.moveY(
-            this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
-          );
-          this.counter.increment();
         }
 
         orientSprite() {
@@ -102,8 +115,8 @@
         constructor(imagePath, scale, baseX, baseY, xVariance, yVariance) {
           super(imagePath, scale, baseX, baseY, xVariance, yVariance);
           this.colorScale = chroma
-            .scale(['green', 'blue', 'indigo', 'violet'])
-            .mode('lrgb')
+            .scale(["green", "blue", "indigo", "violet"])
+            .mode("lrgb")
             .gamma(2)
             .colors(1000)
             .map((color) => Number(`0x${color.slice(1, color.length)}`));
@@ -112,17 +125,19 @@
         }
 
         tick() {
-          this.wiggle(5, 300);
-          this.moveX(
-            this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
-          );
-          this.moveY(
-            this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
-          );
-          this.counter.increment();
+          if (!this.dragging) {
+            this.wiggle(5, 300);
+            this.moveX(
+              this.baseX + Math.sin(this.counter.value / 100) * this.xVariance
+            );
+            this.moveY(
+              this.baseY + Math.sin(this.counter.value / 40) * this.yVariance
+            );
+            this.counter.increment();
 
-          // Change colors
-          this.changeColor();
+            // Change colors
+            this.changeColor();
+          }
         }
 
         changeColor() {
@@ -131,6 +146,77 @@
             (this.colorScale.length / 2);
           this.sprite.tint = this.colorScale[Math.floor(colorIndex)];
         }
+      }
+
+      class DraggableFish extends PIXI.Container {
+        constructor() {
+          super();
+          this.counter = new Counter();
+          this.baseX = 0;
+          this.baseY = 0;
+          // Make container interactive
+          this.interactive = true;
+
+          //Button Body
+          const sprite = PIXI.Sprite.from("img/fish.png");
+          sprite.scale.set(-0.15, 0.15);
+          sprite.anchor.set(0.5);
+          this.addChild(sprite);
+          this.sprite = sprite;
+
+          //Event listeners
+          // this.on("pointertap", (e) => {
+          //   console.log(e);
+          //   const color = Math.random() * 0xffffff;
+          //   sprite.tint = color;
+          // });
+
+          this.on("pointerover", (e) => {
+            sprite.alpha = 0.7;
+          });
+
+          this.on("pointerout", (e) => {
+            sprite.alpha = 1;
+          });
+
+          // Draggable event listeners
+          this.draggable = true; //whether it can drag
+          this.dragging = false; //whether this is currently being dragged
+
+          // Offsets prevent button from snapping onto cursor upon dragging
+          this.offsetX;
+          this.offsteY;
+
+          this.on("pointerdown", (e) => {
+            if (!this.draggable) return;
+            this.dragging = true;
+            this.offsetX = this.x - e.global.x;
+            this.offsetY = this.y - e.global.y;
+          });
+
+          this.on("pointermove", (e) => {
+            if (!this.draggable) return;
+            // console.log(e.global.x, e.global.y);
+            if (this.dragging) {
+              this.x = e.global.x + this.offsetX;
+              this.y = e.global.y + this.offsetY;
+              this.baseX = this.x;
+              this.baseY = this.y;
+            }
+          });
+          this.on("pointerup", (e) => {
+            if (!this.draggable) return;
+            this.dragging = false;
+          });
+
+          // Failsafe. Just in case pointer ends up outside of button somehow
+          this.on("pointerupoutside", (e) => {
+            if (!this.draggable) return;
+            this.dragging = false;
+          });
+        }
+
+        tick() {}
       }
 
       class School extends Actor {
@@ -145,9 +231,9 @@
           this.origin.y = baseY;
           this.previousPos = this.origin.x;
           this.fish = [
-            new Fish('img/fish.png', 0.1, 0, 0, xVariance, yVariance),
-            new Fish('img/fish.png', 0.1, 50, 50, xVariance, yVariance),
-            new Fish('img/fish.png', 0.1, 50, -50, xVariance, yVariance),
+            new Fish("img/fish.png", 0.1, 0, 0, xVariance, yVariance),
+            new Fish("img/fish.png", 0.1, 50, 50, xVariance, yVariance),
+            new Fish("img/fish.png", 0.1, 50, -50, xVariance, yVariance),
           ];
 
           this.fish.forEach((fish) => {
@@ -425,9 +511,9 @@
 
       // Rock Pile
       const rocks = new PIXI.Container();
-      const rock1 = PIXI.Sprite.from('img/rock.png');
-      const rock2 = PIXI.Sprite.from('img/rock.png');
-      const rock3 = PIXI.Sprite.from('img/rock.png');
+      const rock1 = PIXI.Sprite.from("img/rock.png");
+      const rock2 = PIXI.Sprite.from("img/rock.png");
+      const rock3 = PIXI.Sprite.from("img/rock.png");
       rock1.anchor.set(0.5);
       rock2.anchor.set(0.5);
       rock3.anchor.set(0.5);
@@ -448,19 +534,22 @@
       rocks.y = 422;
 
       // Our actors, in order of appearance
-      const fish1 = new Fish('img/fish.png', 0.2, 320, 100, 250, 10);
-      const fish2 = new CamoFish('img/fish2.png', 0.15, 320, 200, 250, 10);
+      const fish1 = new Fish("img/fish.png", 0.2, 320, 100, 250, 10);
+      const fish2 = new CamoFish("img/fish2.png", 0.15, 320, 200, 250, 10);
+      const fish3 = new DraggableFish(0.5);
+      fish3.x = 50;
+      fish3.y = 300;
       const school = new School(300, 300, 150, 0.1);
       const bubbler = new Bubbler();
-      const plant = new Plant('img/plant.png', 0.7, 620, 450);
+      const plant = new Plant("img/plant.png", 0.7, 620, 450);
 
       const button = new Button("Change Goldfish Color", 100, 50);
 
       button.x = 50;
       button.y = 380;
-      button.buttonLabel.scale.set(.8);
+      button.buttonLabel.scale.set(0.8);
 
-      button.on("pointertap", e => {
+      button.on("pointertap", (e) => {
         const color = Math.random() * 0xffffff;
         fish1.sprite.tint = color;
       });
@@ -474,7 +563,7 @@
 
       rocks.addChild(rock1, rock2, rock3);
       app.stage.addChild(rocks);
-
+      app.stage.addChild(fish3);
       app.stage.addChild(button);
       app.stage.addChild(slider);
       // let counter = 0;
@@ -485,11 +574,11 @@
         fish2.tick();
         school.tick();
         plant.tick();
+        fish3.tick();
 
         requestAnimationFrame(loop);
       }
       loop();
     </script>
   </body>
-
 </html>
