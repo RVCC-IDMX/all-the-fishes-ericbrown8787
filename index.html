@@ -6,6 +6,8 @@
     <title>Animations</title>
 
     <script src="https://pixijs.download/release/pixi.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js
+"></script>
   </head>
   <body>
     <script>
@@ -39,6 +41,7 @@
             scaleY: obj.scale.y,
             alpha: obj.alpha,
             rotation: (obj.rotation * 180) / Math.PI,
+            tint: obj.tint,
           };
 
           // Set defaults
@@ -100,6 +103,7 @@
             }
 
             // Lerp rotation
+            // this reminded me that 0 is falsy
             if (end.rotation != undefined) {
               obj.rotation = lerp(
                 // Converting these to degrees because it's easier to visualize
@@ -107,6 +111,42 @@
                 (end.rotation * Math.PI) / 180,
                 ease
               );
+            }
+
+            // Lerp tint
+            if (end.tint != undefined) {
+              // Maybe we'll come back to this
+              // const r = Math.round(
+              //   lerp(
+              //     Number(`${start.tint}`.toString(16).slice(0, 2)),
+              //     Number(`${end.tint}`.toString(16).slice(0, 2)),
+              //     ease
+              //   )
+              // ).toString(16);
+              // console.log(r);
+              // const g = Math.round(
+              //   lerp(
+              //     Number(`${start.tint}`.toString(16).slice(2, 4)),
+              //     Number(`${end.tint}`.toString(16).slice(2, 4)),
+              //     ease
+              //   )
+              // ).toString(16);
+              // console.log(g);
+              // const b = Math.round(
+              //   lerp(
+              //     Number(`${start.tint}`.toString(16).slice(4, 6)),
+              //     Number(`${end.tint}`.toString(16).slice(4, 6)),
+              //     ease
+              //   )
+              // ).toString(16);
+              // console.log(b);
+              // obj.tint = Number(
+              //   `0x${r.padStart(2, '0')}${g.padStart(2, '0')}${b.padStart(
+              //     2,
+              //     '0'
+              //   )}`
+              // );
+              obj.tint = lerp(start.tint, end.tint, ease);
             }
 
             // Loop
@@ -140,7 +180,7 @@
       }
 
       //test
-      const bob = PIXI.Sprite.from('img/fish.png');
+      const bob = PIXI.Sprite.from('img/fish2.png');
       bob.anchor.set(0.5);
       bob.scale.set(0.25);
 
@@ -183,37 +223,55 @@
       //   go();
       // }
       async function go() {
-        await Animate.to(bob, {
-          alpha: 0.25,
-          x: 90,
-          y: 120,
-          easing: Animate.easeInOut,
-          duration: 1000,
-        });
-        await Animate.to(bob, {
-          scaleX: -0.25,
-          duration: 300,
-        });
-        await Animate.to(bob, {
-          alpha: 1,
-          x: 200,
+        // await Animate.to(bob, {
+        //   alpha: 0.25,
+        //   x: 90,
+        //   y: 120,
+        //   easing: Animate.easeInOut,
+        //   duration: 1000,
+        // });
+        // await Animate.to(bob, {
+        //   scaleX: -0.25,
+        //   duration: 300,
+        // });
+        // await Animate.to(bob, {
+        //   alpha: 1,
+        //   x: 200,
 
-          easing: Animate.easeInOut,
+        //   easing: Animate.easeInOut,
+        //   duration: 1000,
+        // });
+        // await Animate.to(bob, {
+        //   scaleX: 0.25,
+        //   duration: 300,
+        // });
+        // await Animate.to(bob, {
+        //   rotation: 90,
+        //   duration: 2000,
+        // });
+        // // await pause(2000);
+        // await Animate.to(bob, {
+        //   rotation: 0,
+        //   duration: 3000,
+        // });
+        await Animate.to(bob, {
+          x: 120,
+          y: 120,
           duration: 1000,
         });
+
         await Animate.to(bob, {
-          scaleX: 0.25,
-          duration: 300,
-        });
-        await Animate.to(bob, {
-          rotation: 90,
+          tint: 0x00ff00,
           duration: 2000,
         });
-        // await pause(2000);
-        await Animate.to(bob, {
-          rotation: 0,
-          duration: 3000,
-        });
+        // await Animate.to(bob, {
+        //   tint: 0x00ff00,
+        //   duration: 2000,
+        // });
+        // await Animate.to(bob, {
+        //   tint: 0x000000,
+        //   duration: 2000,
+        // });
         go();
       }
       window.addEventListener('load', go);

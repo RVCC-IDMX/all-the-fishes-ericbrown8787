@@ -26,6 +26,8 @@ To simulate bubbles, I used PIXI's Graphics class to draw a series of semi-trans
 
 **Magnifying Glass:** https://www.clipartmax.com/middle/m2H7K9H7K9i8d3Z5_magnifying-glass-pixel-art-from-the-science-pack-of-minecraft-cake-pixel/
 
+**Pencil Placeholder:** https://www.pngmart.com/image/652931
+
 ---
 
 ### Additional Libraries Used:
