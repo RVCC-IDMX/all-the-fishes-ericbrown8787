@@ -158,6 +158,7 @@
       const fish2 = PIXI.Sprite.from("img/fish2.png");
       const fish3 = PIXI.Sprite.from("img/fish3.png");
 
+      // Fish1
       fish1.anchor.set(0.5);
       fish1.scale.set(0.1);
       fish1.startOrientation = fish1.scale.x;
@@ -169,6 +170,13 @@
       fish1.startX = fish1.x;
       fish1.startY = fish1.y;
 
+      // Fish2
+      fish2.x = 400;
+      fish2.y = 400;
+
+      fish2.startOrientation = fish2.scale.x;
+
+      // Fish3
       fish3.anchor.set(0.5);
       fish3.scale.set(0.2);
       fish3.scale.x *= -1;
@@ -180,6 +188,21 @@
       fish3.startX = fish3.x;
       fish3.startY = fish3.y;
 
+      // Add school of fish
+      const school = new PIXI.Container();
+      school.addChild(PIXI.Sprite.from('img/fish2.png'));
+      school.addChild(PIXI.Sprite.from('img/fish2.png'));
+      school.addChild(PIXI.Sprite.from('img/fish2.png'));
+      school.children.forEach(fish => {
+        fish.anchor.set(0.5);
+        fish.scale.set(0.1);
+        fish.scale.x *= -1;
+      });
+      school.children[1].x = 75;
+      school.children[1].y = 75;
+      school.children[2].y = 150;
+      school.x = 100;
+      school.y = 200;
       // Add bubbler
       // const bubbler = new Bubbler();
       const bubblePool = new PIXI.Container();
@@ -269,6 +292,7 @@
       app.stage.addChild(rocks);
       app.stage.addChild(glass);
       app.stage.addChild(fish1);
+      app.stage.addChild(school);
 
       // Define fish behaviors
 
@@ -285,6 +309,61 @@
         });
 
         requestAnimationFrame(fish1Behavior);
+      }
+
+      async function schoolBehavior() {
+        await Animate.to(school, {
+          x: 800,
+          y: 350,
+          duration: Math.random() * 1500 + 1500,
+          easing: Animate.easeInOut
+        });
+        await Animate.to(school, {
+          scaleX: school.scale.x * -1,
+          duration: 250,
+          easing: Animate.easeInOut
+        });
+
+        await Animate.to(school, {
+          x: 100,
+          y: 400,
+          duration: Math.random() * 1500 + 1500,
+          easing: Animate.easeInOut
+        });
+        await Animate.to(school, {
+          scaleX: school.scale.x * -1,
+          duration: 250,
+          easing: Animate.easeInOut
+        });
+        await Animate.to(school, {
+          x: 100,
+          y: 100,
+          duration: Math.random() * 1500 + 1500,
+          easing: Animate.easeInOut
+        });
+        requestAnimationFrame(schoolBehavior);
+      }
+
+
+      function schoolChildrenBehavior() {
+        const behaviors = school.children.map(fish => {
+          return async function () {
+            await Animate.to(fish, {
+              y: fish.y + 25,
+              duration: Math.random() * 500 + 250,
+              easing: Animate.easeInOut,
+            });
+            await Animate.to(fish, {
+              y: fish.y - 25,
+              duration: Math.random() * 500 + 250,
+              easing: Animate.easeInOut,
+            });
+            // I didn't even know arguments.callee existed before this
+            requestAnimationFrame(arguments.callee);
+          };
+        });
+
+        behaviors.forEach(fun => fun());
       }
 
       async function fish3Behavior() {
@@ -430,8 +509,6 @@
         requestAnimationFrame(fish3Behavior);
       });
       fish1.on("pointertap", async (event) => {
-        // const origX = fish1.x;
-        // const origY = fish1.y;
         fish1.interactive = false;
         await Animate.to(fish1, {
           y: 50,
@@ -475,6 +552,8 @@
       window.addEventListener("load", fish1Behavior);
       window.addEventListener("load", fish3Behavior);
       window.addEventListener("load", bubbler);
+      window.addEventListener("load", schoolBehavior);
+      window.addEventListener("load", schoolChildrenBehavior);
       // window.addEventListener("load", schoolBehavior);
 
       // Check easings.net for more easing functions
