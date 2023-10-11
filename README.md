@@ -14,15 +14,13 @@ To simulate bubbles, I used PIXI's Graphics class to draw a series of semi-trans
 
 ### Art Assets:
 
-**Goldfish:** https://www.pngaaa.com/detail/1194767
-
-**Color-Changing Fish:** https://pngtree.com/freepng/pixel-art-game-supplies-swimming-fish_6460104.html
+**Fish Art Assets Drawn by Sarah Lopez, used with permission**
 
 **Rock:** https://www.pngkit.com/view/u2q8r5e6r5q8a9a9_rock-rock-pixel-art-png/
 
 **Plant:** https://www.pngwing.com/en/free-png-zlzaj
 
-**Randomize Color Icon:** https://www.pngegg.com/en/png-izzkb
+**Randomize Icon:** https://www.pngegg.com/en/png-izzkb
 
 **Magnifying Glass:** https://www.clipartmax.com/middle/m2H7K9H7K9i8d3Z5_magnifying-glass-pixel-art-from-the-science-pack-of-minecraft-cake-pixel/
 
