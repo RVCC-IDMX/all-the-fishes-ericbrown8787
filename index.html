@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js
 "></script>
   </head>
+
   <body>
     <script>
       // The app
@@ -174,17 +176,70 @@
         return 1 - Math.pow(-2 * x + 2, 2) / 2;
       };
 
+      Animate.easeInCubic = (x) => {
+        return x * x * x;
+      };
       // Pause
       Animate.pause = (ms) => {
         return new Promise((resolve, reject) => setTimeout(resolve, ms));
       };
 
+      class Bubbler extends PIXI.Container {
+        constructor() {
+          super();
+          this.timer = Date.now();
+          this.delay = 200;
+
+        }
+
+        async animateBubble(bubble) {
+          // if (bubble.y < -this.y) {
+          //   bubble.destroy();
+          // }
+          await Animate.to(bubble, {
+            y: -this.y,
+            duration: 1000,
+            easing: Animate.easeIn
+          });
+
+          requestAnimationFrame(animateBubble);
+        }
+
+        spawnBubble() {
+          const bubble = new PIXI.Graphics();
+          const radius = Math.floor(Math.random() * 15) + 15;
+          bubble.buoyancy = radius;
+          bubble.beginFill(0x333333);
+          bubble.drawCircle(0, 0, radius + 1);
+          bubble.beginFill(0x77ffff);
+          bubble.drawCircle(0, 0, radius);
+          bubble.beginFill(0x99eeff);
+          bubble.alpha = 0.2;
+          bubble.drawCircle(2, -2, radius - 3);
+          bubble.endFill();
+          this.addChild(bubble);
+          console.log(this.children);
+        }
+
+        async bubble() {
+          if (Date.now() >= this.timer + this.delay) {
+            this.spawnBubble();
+            this.timer = Date.now() + Math.floor(Math.random() * 250);
+          }
+          console.log(this.children);
+          this.children.forEach(async bubble => {
+            await animateBubble(bubble);
+          });
+          requestAnimationFrame(bubble);
+        }
+
+
+      }
+
       // Instantiate the fish
       const fish1 = PIXI.Sprite.from("img/fish1.png");
-
       const fish2 = PIXI.Sprite.from("img/fish2.png");
       const fish3 = PIXI.Sprite.from("img/fish3.png");
-      const school = new PIXI.Container();
 
       fish1.anchor.set(0.5);
       fish1.scale.set(0.1);
@@ -207,6 +262,27 @@
       fish3.y = 600;
       fish3.startX = fish3.x;
       fish3.startY = fish3.y;
+
+      // Add bubbler
+      // const bubbler = new Bubbler();
+      const bubblePool = new PIXI.Container();
+      bubblePool.x = 50;
+      bubblePool.y = 800;
+      for (let i = 0; i < 50; i++) {
+        const bubble = new PIXI.Graphics();
+        bubble.x = Math.floor(Math.random() * 200);
+        const radius = Math.floor(Math.random() * 15) + 15;
+        bubble.buoyancy = radius / 7;
+        bubble.beginFill(0x333333);
+        bubble.drawCircle(0, 0, radius + 1);
+        bubble.beginFill(0x77ffff);
+        bubble.drawCircle(0, 0, radius);
+        bubble.beginFill(0x99eeff);
+        bubble.alpha = 0.2;
+        bubble.drawCircle(2, -2, radius - 3);
+        bubble.endFill();
+        bubblePool.addChild(bubble);
+      }
 
       // Add a fully transparent "glass" layer behind the fish to tap on and attract fish3
       const glass = new PIXI.Graphics();
@@ -261,6 +337,7 @@
       app.stage.addChild(sand);
 
       app.stage.addChild(fish3);
+      app.stage.addChild(bubblePool);
       app.stage.addChild(rocks);
       app.stage.addChild(glass);
       app.stage.addChild(fish1);
@@ -307,6 +384,26 @@
         requestAnimationFrame(fish3Behavior);
       }
 
+
+
+      function bubbler() {
+        const bubbleBehaviors = bubblePool.children.map(bubble => {
+          return async function () {
+            await Animate.to(bubble, {
+              y: -app.screen.height - 100,
+              duration: 12000 / bubble.buoyancy,
+              easing: Animate.easeIn
+            });
+            bubble.y = Math.floor(Math.random() * 75);
+            bubble.x = Math.floor(Math.random() * 200);
+
+            // I didn't even know arguments.callee existed before this
+            requestAnimationFrame(arguments.callee);
+          };
+        });
+
+        bubbleBehaviors.forEach(fun => fun());
+      }
       // Interactive events in order of precedence
       glass.on("pointertap", async (event) => {
         const origX = fish3.x;
@@ -337,7 +434,7 @@
           duration: 2000,
           easing: Animate.easeOut,
         });
-        await Animate.pause(500);
+
 
         // Do a little angry dance
         await Animate.to(fish3, {
@@ -370,6 +467,7 @@
           duration: 250,
           easing: Animate.easeInOut,
         });
+        await Animate.pause(500);
 
         //Handling fish orientation
         if (tapX > origX) {
@@ -448,9 +546,11 @@
 
       window.addEventListener("load", fish1Behavior);
       window.addEventListener("load", fish3Behavior);
+      window.addEventListener("load", bubbler);
       // window.addEventListener("load", schoolBehavior);
 
       // Check easings.net for more easing functions
     </script>
   </body>
+
 </html>
