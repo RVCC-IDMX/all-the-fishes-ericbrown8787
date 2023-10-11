@@ -44,6 +44,8 @@
             alpha: obj.alpha,
             rotation: (obj.rotation * 180) / Math.PI,
             tint: obj.tint,
+            skewX: obj.skewX,
+            skewY: obj.skewY
           };
 
           // Set defaults
@@ -120,6 +122,12 @@
               obj.tint = lerp(start.tint, end.tint, ease);
             }
 
+            if (end.skewX != undefined) {
+              obj.skew.x = lerp(start.skewX, end.skewX, ease);
+            }
+            if (end.skewY != undefined) {
+              obj.skew.y = lerp(start.skewY, end.skewY, ease);
+            }
             // Loop
             // Saving the animationID for later
             obj.animationID = requestAnimationFrame(loop);
@@ -245,7 +253,7 @@
       // Add some abstract sand
       const sand = new PIXI.Graphics();
       const sandNoise = new PIXI.NoiseFilter(0.4, 6);
-      sand.beginFill(0xaa98a9);
+      sand.beginFill(0x99CCFF);
       sand.drawRect(
         0,
         app.renderer.height - 80,
@@ -253,6 +261,19 @@
         app.renderer.height
       );
       sand.filters = [sandNoise];
+
+      // Add plant
+      const plant = PIXI.Sprite.from('img/plant.png');
+      const plantNoise = new PIXI.NoiseFilter(.8, 1000);
+
+      plant.anchor.set(1);
+      plant.tint = 0x00FFAA;
+      plant.alpha = .6;
+      plant.scale.y = 1.4;
+      plant.x = 1000;
+      plant.y = 750;
+      plant.filters = [plantNoise];
+      // plant.skew.x = .2;
 
       // Add rocks
       const rocks = new PIXI.Container();
@@ -290,6 +311,7 @@
       app.stage.addChild(bubblePool);
 
       app.stage.addChild(rocks);
+      app.stage.addChild(plant);
       app.stage.addChild(glass);
       app.stage.addChild(fish1);
       app.stage.addChild(school);
@@ -388,7 +410,21 @@
           easing: Animate.easeIn,
         });
 
+
         requestAnimationFrame(fish3Behavior);
+      }
+
+      async function plantBehavior() {
+        await Animate.to(plant, {
+          skewX: -.2,
+          duration: 750,
+          easing: Animate.easeInOut
+        });
+        await Animate.to(plant, {
+          skewX: .2,
+          duration: 750,
+          easing: Animate.easeInOut
+        });
       }
 
 
@@ -554,7 +590,8 @@
       window.addEventListener("load", bubbler);
       window.addEventListener("load", schoolBehavior);
       window.addEventListener("load", schoolChildrenBehavior);
-      // window.addEventListener("load", schoolBehavior);
+      // window.addEventListener("load", plantBehavior);
+
 
       // Check easings.net for more easing functions
     </script>
